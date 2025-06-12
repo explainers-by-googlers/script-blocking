@@ -7,6 +7,7 @@ This is a proposal for a Chrome feature in Incognito mode that will block the ex
 
 ## Authors
 
+- [James Bradley](https://github.com/jbradl11)
 - [Mike West](https://github.com/mikewest)
 - [Zainab Rizvi](https://github.com/zainabaq)
 
