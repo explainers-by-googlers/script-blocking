@@ -1,12 +1,12 @@
 <pre class='metadata'>
-Title: The TODO API
-Shortname: todo
+Title: Mitigating API Misuse for Browser Re-Identification
+Shortname: Script Blocking
 Level: None
 Status: w3c/UD
-Repository: explainers-by-googlers/todo-your-repo-name
-URL: https://explainers-by-googlers.github.io/todo-your-repo-name
-Editor: TODO: Your Name, Google https://google.com, TODO@google.com
-Abstract: TODO: A short description of your spec, one or two sentences.
+Repository: explainers-by-googlers/script-blocking
+URL: https://explainers-by-googlers.github.io/script-blocking
+Editor: Zainab Rizvi, Google https://google.com, rizvis@google.com
+Abstract: Block the execution of known, prevalent techniques for browser re-identification
 Markup Shorthands: markdown yes, css no
 Complain About: accidental-2119 yes, missing-example-ids yes
 Assume Explicit For: yes
