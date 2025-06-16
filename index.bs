@@ -1,28 +1,198 @@
 <pre class='metadata'>
-Title: Mitigating API Misuse for Browser Re-Identification
-Shortname: Script Blocking
-Level: None
-Status: w3c/UD
-Repository: explainers-by-googlers/script-blocking
-URL: https://explainers-by-googlers.github.io/script-blocking
-Editor: Zainab Rizvi, Google https://google.com, rizvis@google.com
-Abstract: Block the execution of known, prevalent techniques for browser re-identification
-Markup Shorthands: markdown yes, css no
+Title: Script Blocking
+Shortname: script-blocking
+Level: 1
+Status: DREAM
+Repository: mikewest/script-blocking
+URL: https://mikewest.github.io/script-blocking/
+Editor: Mike West 56384, Google Inc., mkwst@google.com
+Abstract:
+  User agents may block resource requests in order to protect users. This
+  document suggests a hook in Fetch which would explain these behaviors and
+  allow alignment on timing and impact.
 Complain About: accidental-2119 yes, missing-example-ids yes
-Assume Explicit For: yes
-Die On: warning
-WPT Path Prefix: TODO-API-LABEL
-WPT Display: closed
-Include MDN Panels: if possible
-Include Can I Use Panels: yes
+Markup Shorthands: markdown yes, css no
+</pre>
+<pre class="biblio">
+{
+  "information-leaks": {
+    "authors": [
+      "Artur Janc",
+      "Krzysztof Kotowicz",
+      "Lukas Weichselbaum",
+      "Roberto Clapis"
+    ],
+    "href": "https://arxiv.org/pdf/2001.07421",
+    "title": "Information Leaks vis Safari's Intelligent Tracking Protection"
+  }
+}
 </pre>
 
 Introduction {#intro}
 =====================
 
-For now, see the <a href=[REPOSITORYURL]>explainer</a>.
+User agents generally make decisions about whether or not to load resources
+based on judgements about those resources' impact on user safety. Some of these
+decisions are widely agreed-upon, and have been codified as normative
+requirements in Fetch ("[=bad port=]" and [=Mixed Content=] restrictions, for
+example), while other decisions diverge between agents in a reflection of their
+unique and proprietary heuristics and judgements. User agents which rely upon
+Google's [Safe Browsing](https://safebrowsing.google.com/);
+Microsoft's [SmartScreen](https://www.microsoft.com/en-us/edge/features/microsoft-defender-smartscreen);
+or tracking protection lists from
+[Disconnect](https://github.com/disconnectme/disconnect-tracking-protection),
+[DuckDuckGo](https://github.com/duckduckgo/tracker-blocklists), etc. will all make
+different decisions about the specific set of resources they'll refuse to load.
+It would be ideal, however, for those decisions to have a consistent impact
+when made. How are those decisions exposed to the web? How are they ordered vis
+a vis the standardized decisions discussed above? Are there properties we can
+harmonize and test?
 
-See [https://garykac.github.io/procspec/](https://garykac.github.io/procspec/),
-[https://dlaliberte.github.io/bikeshed-intro/index.html](https://dlaliberte.github.io/bikeshed-intro/index.html),
-and [https://speced.github.io/bikeshed/](https://speced.github.io/bikeshed/) to get started on your
-specification.
+This document aims to answer those questions in the smallest way possible,
+monkey-patching Fetch to provide an implementation-defined hook for blocking
+decisions, and sketching out a process by which widely agreed-upon categories
+of resource-blocking decisions could be tested at a high level of abstraction.
+
+Infrastructure {#infra}
+=======================
+
+For many of the blocking behaviors described above, user agents seem to have
+aligned on a pattern of applying well-defined blocking mechanisms ([[CSP]],
+[[MIX]], etc) first, only consulting a proprietary set of heuristics if the
+request would generally be allowed. Likewise, agents generally align on
+treating blockage as a network error, though some browsers will instead
+[generate a synthetic response ("shim")](https://searchfox.org/mozilla-central/source/browser/extensions/webcompat/data/shims.js)
+for well-known resources to ensure compatibility.
+
+We can support these behaviors with additions to [[!FETCH]] that define an
+[=implementation-defined=] abstract operation that we can call from
+[[FETCH#main-fetch]].
+
+
+<h3 algorithm id="abstract-op">UserAgentOverrideResponseForRequest(|request|)</h3>
+
+The abstract operation <dfn abstract-op export>OverrideResponseForRequest</dfn>
+takes a [=/request=] (|request|), and returns either a [=/response=] or `null`.
+
+This provides user agents to intervene on a given [=/request=] by returning a
+[=/response=] (either a [=network error=] or a synthetic response), or to allow
+the request to proceed by returning `null`.
+
+By default, this operation has the following trivial implementation:
+
+1.  Return `null`.
+
+<div class="note">
+<span class="marker">Note:</span> This default implementation is expected to
+be overridden by a somewhat more complex [=implementation-defined=] algorithm.
+For example, a user agent might decide that its users' safety is best preserved
+by generally blocking requests to `https://mikewest.org/`, while shimming the
+widely-used resource `https://mikewest.org/widget.js` to avoid breakage. That
+implementation might look like the following:
+
+1.  If |request|'s [=request/current url=]'s [=url/host=]'s
+    [=host/registrable domain=] is "mikewest.org":
+
+    1.  If |request|'s [=request/current url=]'s [=url/path=] is
+        « "widget.js" », then:
+
+
+        1.  Let |body| be [*insert a byte sequence representing the shimmed
+            content here*].
+        2.  Return a new [=/response=] with the following properties:
+
+            :   [=response/type=]
+            ::  `cors`
+            :   [=response/status=]
+            ::  200
+            :   [=response/header list=]
+            ::  « *Insert content-type, etc as appropriate here* »
+            :   ...
+            ::  ...
+            :   [=response/body=]
+            ::  The result of getting |body| [=as a body=].
+
+    2.  Return a [=network error=].
+
+2.  Return `null`.
+
+</div>
+
+
+Monkey-Patching Fetch {#fetch}
+------------------------------
+
+Fetch will call into the abstract operation above via a step inserted into
+[[FETCH#main-fetch]], just after the existing step 7 (which performs CSP,
+MIX, and bad port checks):
+
+<ol start=7>
+ <li><p><i>If <a lt="block bad port">should <var>request</var> be blocked due to a bad port</a>,
+ <a lt="should fetching request be blocked as mixed content?">should fetching <var>request</var> be blocked as mixed content</a>, or
+ <a lt="should request be blocked by Content Security Policy?">should <var>request</var> be blocked by Content Security Policy</a>
+ returns <b>blocked</b>, then set <var>response</var> to a <a>network error</a>.</i>
+
+ <li><p>
+    <ins>If |response| is `null`, set |response| to the result of executing
+    [$OverrideResponseForRequest$] on |request|.</ins></p>
+ </li>
+
+ <li><p><i>If <var>request</var>'s <a for=request>referrer policy</a> is the empty string, then set
+ <var>request</var>'s <a for=request>referrer policy</a> to <var>request</var>'s
+ <a for=request>policy container</a>'s <a for="policy container">referrer policy</a>.</i>
+</ol>
+
+Testing Considerations {#testing}
+=================================
+
+It would be ideal to verify the ordering of various restrictions that come into
+play via the patch to Fetch described above. Content Security Policy, Mixed
+Content (both blockage and upgrades), and port restrictions are all evaluated
+prior to checking in with any implementation-defined blockage oracle, and this
+behavior should be verifiable and consistent across user agents.
+
+There's likely no consistent way to do this for any and all blocking
+mechanisms, but specific categories of blocking behavior that have widespread
+agreement seem possible to test in a consistent way. As a potential path to
+explore, consider that Google's Safe Browsing defines a small set of known-bad
+URLs (see https://testsafebrowsing.appspot.com/) that allow manual
+verification of browser behavior. Perhaps we could extend this notion to some
+set of high-level blockage categories that user agents seem to generally agree
+upon ("phishing", "malware", "unwanted software", "fingerprinting", etc), and
+define well-known test URLs for each within the WPT framework.
+
+That is, `phishing.web-platform.test` could be added to user agents' lists of
+phishing sites, and represented within WPT via substitutions against
+`{{domains[phishing]}}`. We'd likely need some Web Driver API to make this
+possible, but it seems like a plausible approach that would allow us to verify
+ordering and replacement behaviors in a repeatable way.
+
+Note: Some blocking behaviors (blocking all top-level navigation to an origin,
+for example) might be difficult to test based only upon web-visible behavior, as
+network errors and cross-origin documents ought to be indistinguishable. We could
+rely upon leaks like
+[frame counting](https://xsleaks.dev/docs/attacks/frame-counting/), but ideally
+we'd treat that as a bug, not a feature we can rely upon.
+
+Security Considerations {#security}
+===================================
+
+Blocking or shimming subresource requests can put pages into unexpected states
+that developers are unlikely to have tested or reasoned about. This can happen
+in any event, as pages might be unable to load specific resources for a variety
+of reasons (outages, timeouts, etc). Ideally developers would handle these
+situations gracefully, but user agents implementing resource blocking would be
+well-advised to take the risk seriously, and carefully evaluate resources'
+usage before taking action against them.
+
+Privacy Considerations {#privacy}
+=================================
+
+Blocking resources has web-visible implications. If the set of resources
+blocked for one user differs from the set of resources blocked by another user
+(based, perhaps, on heuristics that take individual users' browsing behavior
+into account), that visible delta could be used as part of a global identifier
+(see e.g. "Information Leaks via Safari's Intelligent Tracking Prevention" for
+a variant of this attack [[information-leaks]]). User agents implementing
+resource blocking can avoid this risk by ensuring that the set of blocked
+resources is as uniform as possible across their userbase.
