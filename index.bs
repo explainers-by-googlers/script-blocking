@@ -3,8 +3,8 @@ Title: Script Blocking
 Shortname: script-blocking
 Level: 1
 Status: DREAM
-Repository: mikewest/script-blocking
-URL: https://mikewest.github.io/script-blocking/
+Repository: explainers-by-googlers/script-blocking
+URL: https://explainers-by-googlers.github.io/script-blocking/
 Editor: Mike West 56384, Google Inc., mkwst@google.com
 Abstract:
   User agents may block resource requests in order to protect users. This
