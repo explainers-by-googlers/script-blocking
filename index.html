@@ -1490,7 +1490,7 @@ Possible extra rowspan handling
 </style>
   <meta content="Bikeshed version 275834c42, updated Wed Jun 11 14:18:15 2025 -0700" name="generator">
   <link href="https://explainers-by-googlers.github.io/script-blocking/" rel="canonical">
-  <meta content="8de7b79198cb67938dfdb9c96bc7cb0e5ca57460" name="revision">
+  <meta content="6da9ff9d9b50ae97b8c25790e97df6d1b56a5a58" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2095,13 +2095,14 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">Script Blocking</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">A Collection of Interesting Ideas,
-    <time class="dt-updated" datetime="2025-06-16">16 June 2025</time></span></h2>
+    <time class="dt-updated" datetime="2025-06-19">19 June 2025</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
      <dd><a class="u-url" href="https://explainers-by-googlers.github.io/script-blocking/">https://explainers-by-googlers.github.io/script-blocking/</a>
      <dt>Issue Tracking:
      <dd><a href="https://github.com/explainers-by-googlers/script-blocking/issues/">GitHub</a>
+     <dd><a href="#issues-index">Inline In Spec</a>
      <dt class="editor">Editor:
      <dd class="editor p-author h-card vcard" data-editor-id="56384"><a class="p-name fn u-email email" href="mailto:mkwst@google.com">Mike West</a> (<span class="p-org org">Google Inc.</span>)
     </dl>
@@ -2110,7 +2111,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 16 June 2025,
+In addition, as of 19 June 2025,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2152,6 +2153,7 @@ allow alignment on timing and impact.</p>
       <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
       <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
      </ol>
+    <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a>
    </ol>
   </nav>
   <main>
@@ -2270,6 +2272,8 @@ MIX, and bad port checks):</p>
  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-policy-container" id="ref-for-concept-request-policy-container">policy container</a>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#policy-container-referrer-policy" id="ref-for-policy-container-referrer-policy">referrer policy</a>.</i>
 </p>
    </ol>
+   <p class="issue" id="issue-3d4b787d"><a class="self-link" href="#issue-3d4b787d"></a> This might not be the best
+spot for the new check. Perhaps it should move to the top of HTTP Fetch? <a href="https://github.com/explainers-by-googlers/script-blocking/issues/2">[explainers-by-googlers/script-blocking Issue #2]</a></p>
    <h2 class="heading settled" data-level="3" id="testing"><span class="secno">3. </span><span class="content">Testing Considerations</span><a class="self-link" href="#testing"></a></h2>
    <p>It would be ideal to verify the ordering of various restrictions that come into
 play via the patch to Fetch described above. Content Security Policy, Mixed
@@ -2552,6 +2556,11 @@ resources is as uniform as possible across their userbase.</p>
    <dt id="biblio-url">[URL]
    <dd>Anne van Kesteren. <a href="https://url.spec.whatwg.org/"><cite>URL Standard</cite></a>. Living Standard. URL: <a href="https://url.spec.whatwg.org/">https://url.spec.whatwg.org/</a>
   </dl>
+  <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
+  <div style="counter-reset:issue">
+   <div class="issue"> This might not be the best
+spot for the new check. Perhaps it should move to the top of HTTP Fetch? <a href="https://github.com/explainers-by-googlers/script-blocking/issues/2">[explainers-by-googlers/script-blocking Issue #2]</a> <a class="issue-return" href="#issue-3d4b787d" title="Jump to section">↵</a></div>
+  </div>
 <script>/* Boilerplate: script-dom-helper */
 "use strict";
 function query(sel) { return document.querySelector(sel); }
