@@ -142,6 +142,9 @@ MIX, and bad port checks):
  <a for=request>policy container</a>'s <a for="policy container">referrer policy</a>.</i>
 </ol>
 
+ISSUE(explainers-by-googlers/script-blocking#2): This might not be the best
+spot for the new check. Perhaps it should move to the top of HTTP Fetch?
+
 Testing Considerations {#testing}
 =================================
 
