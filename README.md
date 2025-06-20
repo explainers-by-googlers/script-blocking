@@ -10,6 +10,7 @@ This is a proposal for a Chrome feature in Incognito mode that will block the ex
 - [James Bradley](https://github.com/jbradl11)
 - [Mike West](https://github.com/mikewest)
 - [Zainab Rizvi](https://github.com/zainabaq)
+- [Martin Verde](https://github.com/mverde)
 
 ## Participate
 - https://github.com/explainers-by-googlers/script-blocking/issues
@@ -47,12 +48,22 @@ The [appeals process](https://github.com/GoogleChrome/ip-protection?tab=readme-o
 
 The feature will be available for users in Chrome’s Incognito mode only, on Android and Desktop platforms. It will be on by default in Incognito. Users will have the ability to disable it. For enterprise-managed versions of Chrome, the feature can be enabled in Incognito, but it will be off by default to ensure that enterprise site compatibility and their user workflows are not impacted. 
 
-## An ever evolving landscape
+## An ever-evolving landscape
 
 Given the dynamic nature of tracking techniques, user agents will want to continuously research and evolve their solutions to offer the best possible protection against new and emerging scaled techniques.   Guided by insights from the [Identifiability Study](https://doi.org/10.1145/3589335.3648322), Chrome is prioritizing countermeasures against prevalent and high-impact techniques. Looking forward, we expect to continue to evolve and expand the set of techniques that Chrome detects, and to strengthen the protection against potential circumvention. 
 
 ## Ecosystem engagement
 
-We welcome feedback on this proposal from the ecosystem. This feedback will be considered for refining our proposal and shaping the future roadmap for Mitigating API Misuse for Browser Re-Identification.
+We welcome feedback on this proposal from the ecosystem. This feedback will be considered for refining our proposal and shaping the future roadmap for Mitigating API Misuse for Browser Re-Identification. We also recognize that several other browsers have implemented features similar to what is described here and see room to standardize the content blocking interface on the web, perhaps via a [hook in the Fetch API](https://explainers-by-googlers.github.io/script-blocking/).
+
+## References & acknowledgements
+
+Thanks to the following projects for their work on similar problems that influenced this proposal. 
+
+* [Firefox's Enhanced Tracking Protection](https://support.mozilla.org/en-US/kb/firefox-protection-against-fingerprinting)
+* [Brave's Fingerprinting Protection](https://github.com/brave/brave-browser/wiki/Fingerprinting-Protections)
+* [Opera's Tracker Blocker](https://help.opera.com/en/latest/features/#tracker-blocker)
+* [Edge's Tracking Prevention](https://www.microsoft.com/en-us/edge/features/tracking-prevention)
+* [Safari's Private Browsing 2.0](https://webkit.org/blog/15697/private-browsing-2-0/)
 
 [^1]: Enrico Bacis, Igor Bilogrevic, Robert Busa-Fekete, Asanka Herath, Antonio Sartori, and Umar Syed. 2024. Assessing Web Fingerprinting Risk. In Companion Proceedings of the ACM on Web Conference 2024 (WWW '24). Association for Computing Machinery, New York, NY, USA, 245–254. https://doi.org/10.1145/3589335.3648322
