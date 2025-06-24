@@ -1490,7 +1490,7 @@ Possible extra rowspan handling
 </style>
   <meta content="Bikeshed version 275834c42, updated Wed Jun 11 14:18:15 2025 -0700" name="generator">
   <link href="https://explainers-by-googlers.github.io/script-blocking/" rel="canonical">
-  <meta content="52803b37e68fa7c1912f570525411fc2373e1b49" name="revision">
+  <meta content="b3da8905e9c5f7a282e07fbe2e04b6411c00bde0" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2095,14 +2095,13 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">Script Blocking</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">A Collection of Interesting Ideas,
-    <time class="dt-updated" datetime="2025-06-20">20 June 2025</time></span></h2>
+    <time class="dt-updated" datetime="2025-06-24">24 June 2025</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
      <dd><a class="u-url" href="https://explainers-by-googlers.github.io/script-blocking/">https://explainers-by-googlers.github.io/script-blocking/</a>
      <dt>Issue Tracking:
      <dd><a href="https://github.com/explainers-by-googlers/script-blocking/issues/">GitHub</a>
-     <dd><a href="#issues-index">Inline In Spec</a>
      <dt class="editor">Editor:
      <dd class="editor p-author h-card vcard" data-editor-id="56384"><a class="p-name fn u-email email" href="mailto:mkwst@google.com">Mike West</a> (<span class="p-org org">Google Inc.</span>)
     </dl>
@@ -2111,7 +2110,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 20 June 2025,
+In addition, as of 24 June 2025,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2153,7 +2152,6 @@ allow alignment on timing and impact.</p>
       <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
       <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
      </ol>
-    <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a>
    </ol>
   </nav>
   <main>
@@ -2250,30 +2248,68 @@ content here</em>].</p>
     </ol>
    </div>
    <h3 class="heading settled" data-level="2.2" id="fetch"><span class="secno">2.2. </span><span class="content">Monkey-Patching Fetch</span><a class="self-link" href="#fetch"></a></h3>
-   <p>Fetch will call into the abstract operation above via a step inserted into
-<a href="https://fetch.spec.whatwg.org/#main-fetch"><cite>Fetch</cite> § 4.1 Main fetch</a>, just after the existing step 7 (which performs CSP,
-MIX, and bad port checks):</p>
-   <ol start="7">
-    <li>
-     <p><i>If <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#block-bad-port" id="ref-for-block-bad-port">should <var>request</var> be blocked due to a bad port</a>,
- <a data-link-type="dfn" href="https://w3c.github.io/webappsec-mixed-content/#should-block-fetch" id="ref-for-should-block-fetch">should fetching <var>request</var> be blocked as mixed content</a>, or
- <a data-link-type="dfn" href="https://w3c.github.io/webappsec-csp/#should-block-request" id="ref-for-should-block-request">should <var>request</var> be blocked by Content Security Policy</a>
- returns <b>blocked</b>, then set <var>response</var> to a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-network-error" id="ref-for-concept-network-error②">network error</a>.</i>
+   <div class="algorithm" data-algorithm="monkey-patching Scheme Fetch">
+    
+Fetch will call into this abstract operation near the top of
+<a href="https://fetch.spec.whatwg.org/#scheme-fetch"><cite>Fetch</cite> § 4.2 Scheme fetch</a>, ensuring that any potential shimming happens only after
+<a href="https://fetch.spec.whatwg.org/#main-fetch"><cite>Fetch</cite> § 4.1 Main fetch</a> (which performs CSP, MIX, bad port checks, etc):
 
- </p>
-    <li>
-     <p>
-      <ins>If <var>response</var> is <code>null</code>, set <var>response</var> to the result of executing
-    <a data-link-type="abstract-op" href="#abstract-opdef-overrideresponseforrequest" id="ref-for-abstract-opdef-overrideresponseforrequest">OverrideResponseForRequest</a> on <var>request</var>.</ins>
-     </p>
-    <li>
-     <p><i>If <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-referrer-policy" id="ref-for-concept-request-referrer-policy">referrer policy</a> is the empty string, then set
- <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-referrer-policy" id="ref-for-concept-request-referrer-policy①">referrer policy</a> to <var>request</var>’s
- <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-policy-container" id="ref-for-concept-request-policy-container">policy container</a>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#policy-container-referrer-policy" id="ref-for-policy-container-referrer-policy">referrer policy</a>.</i>
-</p>
-   </ol>
-   <p class="issue" id="issue-3d4b787d"><a class="self-link" href="#issue-3d4b787d"></a> This might not be the best
-spot for the new check. Perhaps it should move to the top of HTTP Fetch? <a href="https://github.com/explainers-by-googlers/script-blocking/issues/2">[explainers-by-googlers/script-blocking Issue #2]</a></p>
+
+    <ol>
+     <li>
+      <p>If <var>fetchParams</var> is <strong>canceled</strong>, then return the <strong>appropriate network error</strong> for <var>fetchParams</var>.</p>
+     <li>
+      <p>Let <var>request</var> be <var>fetchParams</var>’s <strong>request</strong>.</p>
+     <li>
+      <p>
+       <ins>Return the result of executing <a data-link-type="abstract-op" href="#abstract-opdef-overrideresponseforrequest" id="ref-for-abstract-opdef-overrideresponseforrequest">OverrideResponseForRequest</a> on <var>request</var> if the result is not <code>null</code>.</ins>
+      </p>
+     <li>
+      <p>Switch on <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-current-url" id="ref-for-concept-request-current-url②">current URL</a>’s <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-scheme" id="ref-for-concept-url-scheme">scheme</a> and run the associated steps:</p>
+      <ol>
+       <li>…
+      </ol>
+    </ol>
+   </div>
+   <div class="algorithm" data-algorithm="monkey-patching HTTP Fetch">
+    
+Fetch will also call into the abstract operation near the top of
+<a href="https://fetch.spec.whatwg.org/#http-fetch"><cite>Fetch</cite> § 4.3 HTTP fetch</a>, ensuring that requests which bypass <a href="https://fetch.spec.whatwg.org/#scheme-fetch"><cite>Fetch</cite> § 4.2 Scheme fetch</a>
+(today, at least <code>cors</code> requests) can be handled:
+
+
+    <ol>
+     <li>
+      <p>Let <var>request</var> be <var>fetchParams</var>’s <strong>request</strong>.</p>
+     <li>
+      <p>Let <var>response</var> and <var>internalResponse</var> be null.</p>
+     <li>
+      <p>
+       <ins>Set <var>response</var> to the result of executing <a data-link-type="abstract-op" href="#abstract-opdef-overrideresponseforrequest" id="ref-for-abstract-opdef-overrideresponseforrequest①">OverrideResponseForRequest</a> on <var>request</var>.</ins>
+      </p>
+     <li>
+      <p>
+       If 
+       <ins><var>response</var> is <code>null</code> and </ins>
+       <var>request</var>’s
+    <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#request-service-workers-mode" id="ref-for-request-service-workers-mode">service-workers mode</a> is "<code>all</code>", then:
+      </p>
+      <ol>
+       <li>…
+      </ol>
+    </ol>
+   </div>
+   <p class="note" role="note"><span class="marker">Note:</span> Putting this check in both <a href="https://fetch.spec.whatwg.org/#scheme-fetch"><cite>Fetch</cite> § 4.2 Scheme fetch</a> and <a href="https://fetch.spec.whatwg.org/#http-fetch"><cite>Fetch</cite> § 4.3 HTTP fetch</a>
+seems redundant, but ensures that it has a chance to act upon requests to both
+<a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#http-scheme" id="ref-for-http-scheme">HTTP(S) schemes</a> and non-HTTP(S) schemes (like <code>blob:</code>, <code>data:</code>, and
+<code>file:</code>) for both <code>no-cors</code> and <code>cors</code> requests. An alternative to this approach
+would place this new check just before step 12 of <a href="https://fetch.spec.whatwg.org/#main-fetch"><cite>Fetch</cite> § 4.1 Main fetch</a>, and
+extract the <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-network-error" id="ref-for-concept-network-error②">network errors</a> which could be produced in that step to ensure
+they happen consistently prior to potential shimming. This approach seems
+simpler, but the alternative might be clearer? Especially given the appearance
+of a bypass through the <code>preloaded response candidate</code> check (which isn’t really
+a bypass, assuming that the user agent’s intervention blocks the initial request
+which would have preloaded the response (which seems reasonable to assume)).</p>
    <h2 class="heading settled" data-level="3" id="testing"><span class="secno">3. </span><span class="content">Testing Considerations</span><a class="self-link" href="#testing"></a></h2>
    <p>It would be ideal to verify the ordering of various restrictions that come into
 play via the patch to Fetch described above. Content Security Policy, Mixed
@@ -2488,31 +2524,20 @@ resources is as uniform as possible across their userbase.</p>
   <h3 class="no-num no-ref heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
   <ul class="index">
    <li>
-    <a data-link-type="biblio">[CSP]</a> defines the following terms:
-    <ul>
-     <li><span class="dfn-paneled" id="a413e715">Should request be blocked by Content Security Policy?</span>
-    </ul>
-   <li>
     <a data-link-type="biblio">[FETCH]</a> defines the following terms:
     <ul>
      <li><span class="dfn-paneled" id="4a2cfa3a">as a body</span>
      <li><span class="dfn-paneled" id="9b8ae157">bad port</span>
-     <li><span class="dfn-paneled" id="decd4a55">block bad port</span>
      <li><span class="dfn-paneled" id="81a76425">body</span>
      <li><span class="dfn-paneled" id="3f2ca4de">current URL</span>
      <li><span class="dfn-paneled" id="f7b00a8b">header list</span>
+     <li><span class="dfn-paneled" id="eb62573b">HTTP(S) scheme</span>
      <li><span class="dfn-paneled" id="eb1b1af3">network error</span>
-     <li><span class="dfn-paneled" id="86efadaf">policy container</span>
-     <li><span class="dfn-paneled" id="07582c28">referrer policy</span>
      <li><span class="dfn-paneled" id="55213b5b">request</span>
      <li><span class="dfn-paneled" id="ee7bba09">response</span>
+     <li><span class="dfn-paneled" id="6d1db60d">service-workers mode</span>
      <li><span class="dfn-paneled" id="a1d47575">status</span>
      <li><span class="dfn-paneled" id="cdea6030">type</span>
-    </ul>
-   <li>
-    <a data-link-type="biblio">[HTML]</a> defines the following terms:
-    <ul>
-     <li><span class="dfn-paneled" id="cd03669e">referrer policy</span>
     </ul>
    <li>
     <a data-link-type="biblio">[INFRA]</a> defines the following terms:
@@ -2523,7 +2548,6 @@ resources is as uniform as possible across their userbase.</p>
     <a data-link-type="biblio">[MIX]</a> defines the following terms:
     <ul>
      <li><span class="dfn-paneled" id="872edfd5">mixed content</span>
-     <li><span class="dfn-paneled" id="3d877348">Should fetching request be blocked as mixed content?</span>
     </ul>
    <li>
     <a data-link-type="biblio">[URL]</a> defines the following terms:
@@ -2531,36 +2555,30 @@ resources is as uniform as possible across their userbase.</p>
      <li><span class="dfn-paneled" id="b85ee3be">host</span>
      <li><span class="dfn-paneled" id="c0868016">path</span>
      <li><span class="dfn-paneled" id="bc9d7803">registrable domain</span>
+     <li><span class="dfn-paneled" id="3a711be7">scheme</span>
     </ul>
   </ul>
   <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num no-ref heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
   <dl>
-   <dt id="biblio-csp">[CSP]
-   <dd>Mike West; Antonio Sartori. <a href="https://w3c.github.io/webappsec-csp/"><cite>Content Security Policy Level 3</cite></a>. URL: <a href="https://w3c.github.io/webappsec-csp/">https://w3c.github.io/webappsec-csp/</a>
    <dt id="biblio-fetch">[FETCH]
    <dd>Anne van Kesteren. <a href="https://fetch.spec.whatwg.org/"><cite>Fetch Standard</cite></a>. Living Standard. URL: <a href="https://fetch.spec.whatwg.org/">https://fetch.spec.whatwg.org/</a>
-   <dt id="biblio-html">[HTML]
-   <dd>Anne van Kesteren; et al. <a href="https://html.spec.whatwg.org/multipage/"><cite>HTML Standard</cite></a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/multipage/">https://html.spec.whatwg.org/multipage/</a>
    <dt id="biblio-infra">[INFRA]
    <dd>Anne van Kesteren; Domenic Denicola. <a href="https://infra.spec.whatwg.org/"><cite>Infra Standard</cite></a>. Living Standard. URL: <a href="https://infra.spec.whatwg.org/">https://infra.spec.whatwg.org/</a>
    <dt id="biblio-mix">[MIX]
    <dd>Emily Stark; Mike West; Carlos IbarraLopez. <a href="https://w3c.github.io/webappsec-mixed-content/"><cite>Mixed Content</cite></a>. URL: <a href="https://w3c.github.io/webappsec-mixed-content/">https://w3c.github.io/webappsec-mixed-content/</a>
    <dt id="biblio-rfc2119">[RFC2119]
    <dd>S. Bradner. <a href="https://datatracker.ietf.org/doc/html/rfc2119"><cite>Key words for use in RFCs to Indicate Requirement Levels</cite></a>. March 1997. Best Current Practice. URL: <a href="https://datatracker.ietf.org/doc/html/rfc2119">https://datatracker.ietf.org/doc/html/rfc2119</a>
-  </dl>
-  <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
-  <dl>
-   <dt id="biblio-information-leaks">[INFORMATION-LEAKS]
-   <dd>Artur Janc; et al. <a href="https://arxiv.org/pdf/2001.07421"><cite>Information Leaks vis Safari's Intelligent Tracking Protection</cite></a>. URL: <a href="https://arxiv.org/pdf/2001.07421">https://arxiv.org/pdf/2001.07421</a>
    <dt id="biblio-url">[URL]
    <dd>Anne van Kesteren. <a href="https://url.spec.whatwg.org/"><cite>URL Standard</cite></a>. Living Standard. URL: <a href="https://url.spec.whatwg.org/">https://url.spec.whatwg.org/</a>
   </dl>
-  <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
-  <div style="counter-reset:issue">
-   <div class="issue"> This might not be the best
-spot for the new check. Perhaps it should move to the top of HTTP Fetch? <a href="https://github.com/explainers-by-googlers/script-blocking/issues/2">[explainers-by-googlers/script-blocking Issue #2]</a> <a class="issue-return" href="#issue-3d4b787d" title="Jump to section">↵</a></div>
-  </div>
+  <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
+  <dl>
+   <dt id="biblio-csp">[CSP]
+   <dd>Mike West; Antonio Sartori. <a href="https://w3c.github.io/webappsec-csp/"><cite>Content Security Policy Level 3</cite></a>. URL: <a href="https://w3c.github.io/webappsec-csp/">https://w3c.github.io/webappsec-csp/</a>
+   <dt id="biblio-information-leaks">[INFORMATION-LEAKS]
+   <dd>Artur Janc; et al. <a href="https://arxiv.org/pdf/2001.07421"><cite>Information Leaks vis Safari's Intelligent Tracking Protection</cite></a>. URL: <a href="https://arxiv.org/pdf/2001.07421">https://arxiv.org/pdf/2001.07421</a>
+  </dl>
 <script>/* Boilerplate: script-dom-helper */
 "use strict";
 function query(sel) { return document.querySelector(sel); }
@@ -2761,26 +2779,23 @@ function parseHTML(markup) {
 "use strict";
 {
 let dfnPanelData = {
-"07582c28": {"dfnID":"07582c28","dfnText":"referrer policy","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-request-referrer-policy"},{"id":"ref-for-concept-request-referrer-policy\u2460"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#concept-request-referrer-policy"},
-"3d877348": {"dfnID":"3d877348","dfnText":"Should fetching request be blocked as mixed content?","external":true,"refSections":[{"refs":[{"id":"ref-for-should-block-fetch"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://w3c.github.io/webappsec-mixed-content/#should-block-fetch"},
-"3f2ca4de": {"dfnID":"3f2ca4de","dfnText":"current URL","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-request-current-url"},{"id":"ref-for-concept-request-current-url\u2460"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-request-current-url"},
+"3a711be7": {"dfnID":"3a711be7","dfnText":"scheme","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-url-scheme"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://url.spec.whatwg.org/#concept-url-scheme"},
+"3f2ca4de": {"dfnID":"3f2ca4de","dfnText":"current URL","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-request-current-url"},{"id":"ref-for-concept-request-current-url\u2460"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"},{"refs":[{"id":"ref-for-concept-request-current-url\u2461"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#concept-request-current-url"},
 "4a2cfa3a": {"dfnID":"4a2cfa3a","dfnText":"as a body","external":true,"refSections":[{"refs":[{"id":"ref-for-byte-sequence-as-a-body"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#byte-sequence-as-a-body"},
 "55213b5b": {"dfnID":"55213b5b","dfnText":"request","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-request"},{"id":"ref-for-concept-request\u2460"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-request"},
+"6d1db60d": {"dfnID":"6d1db60d","dfnText":"service-workers mode","external":true,"refSections":[{"refs":[{"id":"ref-for-request-service-workers-mode"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#request-service-workers-mode"},
 "81a76425": {"dfnID":"81a76425","dfnText":"body","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-body"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response-body"},
 "860300d4": {"dfnID":"860300d4","dfnText":"implementation-defined","external":true,"refSections":[{"refs":[{"id":"ref-for-implementation-defined"}],"title":"2. Infrastructure"},{"refs":[{"id":"ref-for-implementation-defined\u2460"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://infra.spec.whatwg.org/#implementation-defined"},
-"86efadaf": {"dfnID":"86efadaf","dfnText":"policy container","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-request-policy-container"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#concept-request-policy-container"},
 "872edfd5": {"dfnID":"872edfd5","dfnText":"mixed content","external":true,"refSections":[{"refs":[{"id":"ref-for-mixed-content"}],"title":"1. Introduction"}],"url":"https://w3c.github.io/webappsec-mixed-content/#mixed-content"},
 "9b8ae157": {"dfnID":"9b8ae157","dfnText":"bad port","external":true,"refSections":[{"refs":[{"id":"ref-for-bad-port"}],"title":"1. Introduction"}],"url":"https://fetch.spec.whatwg.org/#bad-port"},
 "a1d47575": {"dfnID":"a1d47575","dfnText":"status","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-status"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response-status"},
-"a413e715": {"dfnID":"a413e715","dfnText":"Should request be blocked by Content Security Policy?","external":true,"refSections":[{"refs":[{"id":"ref-for-should-block-request"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://w3c.github.io/webappsec-csp/#should-block-request"},
-"abstract-opdef-overrideresponseforrequest": {"dfnID":"abstract-opdef-overrideresponseforrequest","dfnText":"OverrideResponseForRequest","external":false,"refSections":[{"refs":[{"id":"ref-for-abstract-opdef-overrideresponseforrequest"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"#abstract-opdef-overrideresponseforrequest"},
+"abstract-opdef-overrideresponseforrequest": {"dfnID":"abstract-opdef-overrideresponseforrequest","dfnText":"OverrideResponseForRequest","external":false,"refSections":[{"refs":[{"id":"ref-for-abstract-opdef-overrideresponseforrequest"},{"id":"ref-for-abstract-opdef-overrideresponseforrequest\u2460"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"#abstract-opdef-overrideresponseforrequest"},
 "b85ee3be": {"dfnID":"b85ee3be","dfnText":"host","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-url-host"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://url.spec.whatwg.org/#concept-url-host"},
 "bc9d7803": {"dfnID":"bc9d7803","dfnText":"registrable domain","external":true,"refSections":[{"refs":[{"id":"ref-for-host-registrable-domain"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://url.spec.whatwg.org/#host-registrable-domain"},
 "c0868016": {"dfnID":"c0868016","dfnText":"path","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-url-path"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://url.spec.whatwg.org/#concept-url-path"},
-"cd03669e": {"dfnID":"cd03669e","dfnText":"referrer policy","external":true,"refSections":[{"refs":[{"id":"ref-for-policy-container-referrer-policy"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://html.spec.whatwg.org/multipage/browsers.html#policy-container-referrer-policy"},
 "cdea6030": {"dfnID":"cdea6030","dfnText":"type","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-type"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response-type"},
-"decd4a55": {"dfnID":"decd4a55","dfnText":"block bad port","external":true,"refSections":[{"refs":[{"id":"ref-for-block-bad-port"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#block-bad-port"},
 "eb1b1af3": {"dfnID":"eb1b1af3","dfnText":"network error","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-network-error"},{"id":"ref-for-concept-network-error\u2460"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"},{"refs":[{"id":"ref-for-concept-network-error\u2461"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#concept-network-error"},
+"eb62573b": {"dfnID":"eb62573b","dfnText":"HTTP(S) scheme","external":true,"refSections":[{"refs":[{"id":"ref-for-http-scheme"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#http-scheme"},
 "ee7bba09": {"dfnID":"ee7bba09","dfnText":"response","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response"},{"id":"ref-for-concept-response\u2460"},{"id":"ref-for-concept-response\u2461"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response"},
 "f7b00a8b": {"dfnID":"f7b00a8b","dfnText":"header list","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-header-list"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response-header-list"},
 };
@@ -3173,26 +3188,23 @@ function genLinkingSyntaxes(dfn) {
 let refsData = {
 "#abstract-opdef-overrideresponseforrequest": {"displayText":"OverrideResponseForRequest","export":true,"for_":[],"level":"1","normative":true,"shortname":"script-blocking","spec":"script-blocking-1","status":"local","text":"OverrideResponseForRequest","type":"abstract-op","url":"#abstract-opdef-overrideresponseforrequest"},
 "https://fetch.spec.whatwg.org/#bad-port": {"displayText":"bad port","export":true,"for_":[],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"bad port","type":"dfn","url":"https://fetch.spec.whatwg.org/#bad-port"},
-"https://fetch.spec.whatwg.org/#block-bad-port": {"displayText":"block bad port","export":true,"for_":[],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"block bad port","type":"dfn","url":"https://fetch.spec.whatwg.org/#block-bad-port"},
 "https://fetch.spec.whatwg.org/#byte-sequence-as-a-body": {"displayText":"as a body","export":true,"for_":["byte sequence"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"as a body","type":"dfn","url":"https://fetch.spec.whatwg.org/#byte-sequence-as-a-body"},
 "https://fetch.spec.whatwg.org/#concept-network-error": {"displayText":"network error","export":true,"for_":[],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"network error","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-network-error"},
 "https://fetch.spec.whatwg.org/#concept-request": {"displayText":"request","export":true,"for_":[],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"request","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-request"},
 "https://fetch.spec.whatwg.org/#concept-request-current-url": {"displayText":"current URL","export":true,"for_":["request"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"current url","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-request-current-url"},
-"https://fetch.spec.whatwg.org/#concept-request-policy-container": {"displayText":"policy container","export":true,"for_":["request"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"policy container","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-request-policy-container"},
-"https://fetch.spec.whatwg.org/#concept-request-referrer-policy": {"displayText":"referrer policy","export":true,"for_":["request"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"referrer policy","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-request-referrer-policy"},
 "https://fetch.spec.whatwg.org/#concept-response": {"displayText":"response","export":true,"for_":[],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"response","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-response"},
 "https://fetch.spec.whatwg.org/#concept-response-body": {"displayText":"body","export":true,"for_":["response"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"body","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-response-body"},
 "https://fetch.spec.whatwg.org/#concept-response-header-list": {"displayText":"header list","export":true,"for_":["response"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"header list","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-response-header-list"},
 "https://fetch.spec.whatwg.org/#concept-response-status": {"displayText":"status","export":true,"for_":["response"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"status","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-response-status"},
 "https://fetch.spec.whatwg.org/#concept-response-type": {"displayText":"type","export":true,"for_":["response"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"type","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-response-type"},
-"https://html.spec.whatwg.org/multipage/browsers.html#policy-container-referrer-policy": {"displayText":"referrer policy","export":true,"for_":["policy container"],"level":"1","normative":true,"shortname":"html","spec":"html","status":"current","text":"referrer policy","type":"dfn","url":"https://html.spec.whatwg.org/multipage/browsers.html#policy-container-referrer-policy"},
+"https://fetch.spec.whatwg.org/#http-scheme": {"displayText":"HTTP(S) scheme","export":true,"for_":[],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"http(s) scheme","type":"dfn","url":"https://fetch.spec.whatwg.org/#http-scheme"},
+"https://fetch.spec.whatwg.org/#request-service-workers-mode": {"displayText":"service-workers mode","export":true,"for_":["request"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"service-workers mode","type":"dfn","url":"https://fetch.spec.whatwg.org/#request-service-workers-mode"},
 "https://infra.spec.whatwg.org/#implementation-defined": {"displayText":"implementation-defined","export":true,"for_":[],"level":"1","normative":true,"shortname":"infra","spec":"infra","status":"current","text":"implementation-defined","type":"dfn","url":"https://infra.spec.whatwg.org/#implementation-defined"},
 "https://url.spec.whatwg.org/#concept-url-host": {"displayText":"host","export":true,"for_":["url"],"level":"1","normative":true,"shortname":"url","spec":"url","status":"current","text":"host","type":"dfn","url":"https://url.spec.whatwg.org/#concept-url-host"},
 "https://url.spec.whatwg.org/#concept-url-path": {"displayText":"path","export":true,"for_":["url"],"level":"1","normative":true,"shortname":"url","spec":"url","status":"current","text":"path","type":"dfn","url":"https://url.spec.whatwg.org/#concept-url-path"},
+"https://url.spec.whatwg.org/#concept-url-scheme": {"displayText":"scheme","export":true,"for_":["url"],"level":"1","normative":true,"shortname":"url","spec":"url","status":"current","text":"scheme","type":"dfn","url":"https://url.spec.whatwg.org/#concept-url-scheme"},
 "https://url.spec.whatwg.org/#host-registrable-domain": {"displayText":"registrable domain","export":true,"for_":["host"],"level":"1","normative":true,"shortname":"url","spec":"url","status":"current","text":"registrable domain","type":"dfn","url":"https://url.spec.whatwg.org/#host-registrable-domain"},
-"https://w3c.github.io/webappsec-csp/#should-block-request": {"displayText":"Should request be blocked by Content Security Policy?","export":true,"for_":[],"level":"3","normative":true,"shortname":"csp","spec":"csp3","status":"current","text":"should request be blocked by content security policy?","type":"dfn","url":"https://w3c.github.io/webappsec-csp/#should-block-request"},
 "https://w3c.github.io/webappsec-mixed-content/#mixed-content": {"displayText":"mixed content","export":true,"for_":[],"level":"1","normative":true,"shortname":"mixed-content","spec":"mixed-content","status":"current","text":"mixed content","type":"dfn","url":"https://w3c.github.io/webappsec-mixed-content/#mixed-content"},
-"https://w3c.github.io/webappsec-mixed-content/#should-block-fetch": {"displayText":"Should fetching request be blocked as mixed content?","export":true,"for_":[],"level":"1","normative":true,"shortname":"mixed-content","spec":"mixed-content","status":"current","text":"should fetching request be blocked as mixed content?","type":"dfn","url":"https://w3c.github.io/webappsec-mixed-content/#should-block-fetch"},
 };
 
 function mkRefHint(link, ref) {
