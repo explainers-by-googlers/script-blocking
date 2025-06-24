@@ -122,28 +122,50 @@ implementation might look like the following:
 Monkey-Patching Fetch {#fetch}
 ------------------------------
 
-Fetch will call into the abstract operation above via a step inserted into
-[[FETCH#main-fetch]], just after the existing step 7 (which performs CSP,
-MIX, and bad port checks):
+<div algorithm="monkey-patching Scheme Fetch">
+Fetch will call into this abstract operation near the top of
+[[FETCH#scheme-fetch]], ensuring that any potential shimming happens only after
+[[FETCH#main-fetch]] (which performs CSP, MIX, bad port checks, etc):
 
-<ol start=7>
- <li><p><i>If <a lt="block bad port">should <var>request</var> be blocked due to a bad port</a>,
- <a lt="should fetching request be blocked as mixed content?">should fetching <var>request</var> be blocked as mixed content</a>, or
- <a lt="should request be blocked by Content Security Policy?">should <var>request</var> be blocked by Content Security Policy</a>
- returns <b>blocked</b>, then set <var>response</var> to a <a>network error</a>.</i>
-
- <li><p>
-    <ins>If |response| is `null`, set |response| to the result of executing
-    [$OverrideResponseForRequest$] on |request|.</ins></p>
- </li>
-
- <li><p><i>If <var>request</var>'s <a for=request>referrer policy</a> is the empty string, then set
- <var>request</var>'s <a for=request>referrer policy</a> to <var>request</var>'s
- <a for=request>policy container</a>'s <a for="policy container">referrer policy</a>.</i>
+<ol>
+  <li><p>If <var ignore>fetchParams</var> is **canceled**, then return the **appropriate network error** for <var>fetchParams</var>.</p></li>
+  <li><p>Let <var>request</var> be <var>fetchParams</var>'s **request**.</p></li>
+  <li><p><ins>Return the result of executing [$OverrideResponseForRequest$] on |request| if the result is not `null`.</ins></p></li> 
+  <li>
+    <p>Switch on <var>request</var>'s <a for=request>current URL</a>'s <a for=url>scheme</a> and run the associated steps:</p>
+    <ol><li>&hellip;</li></ol>
+  </li>
 </ol>
+</div>
 
-ISSUE(explainers-by-googlers/script-blocking#2): This might not be the best
-spot for the new check. Perhaps it should move to the top of HTTP Fetch?
+<div algorithm="monkey-patching HTTP Fetch">
+Fetch will also call into the abstract operation near the top of
+[[FETCH#http-fetch]], ensuring that requests which bypass [[FETCH#scheme-fetch]]
+(today, at least `cors` requests) can be handled:
+
+<ol>
+  <li><p>Let <var>request</var> be <var ignore>fetchParams</var>'s **request**.</p></li>
+  <li><p>Let <var>response</var> and <var ignore>internalResponse</var> be null.</p></li>
+  <li><p><ins>Set |response| to the result of executing [$OverrideResponseForRequest$] on |request|.</ins></p></li>
+  <li>
+    <p>If <ins>|response| is `null` and </ins><var>request</var>'s
+    <a>service-workers mode</a> is "<code>all</code>", then:</p>
+    <ol><li>&hellip;</li></ol>
+  </li>
+</ol>
+</div>
+
+Note: Putting this check in both [[FETCH#scheme-fetch]] and [[FETCH#http-fetch]]
+seems redundant, but ensures that it has a chance to act upon requests to both
+[=HTTP(S) schemes=] and non-HTTP(S) schemes (like `blob:`, `data:`, and
+`file:`) for both `no-cors` and `cors` requests. An alternative to this approach
+would place this new check just before step 12 of [[FETCH#main-fetch]], and
+extract the [=network errors=] which could be produced in that step to ensure
+they happen consistently prior to potential shimming. This approach seems
+simpler, but the alternative might be clearer? Especially given the appearance
+of a bypass through the `preloaded response candidate` check (which isn't really
+a bypass, assuming that the user agent's intervention blocks the initial request
+which would have preloaded the response (which seems reasonable to assume)).
 
 Testing Considerations {#testing}
 =================================
