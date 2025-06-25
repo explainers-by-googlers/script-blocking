@@ -66,4 +66,10 @@ Thanks to the following projects for their work on similar problems that influen
 * [Edge's Tracking Prevention](https://www.microsoft.com/en-us/edge/features/tracking-prevention)
 * [Safari's Private Browsing 2.0](https://webkit.org/blog/15697/private-browsing-2-0/)
 
+We would also like to thank the following individuals for their invaluable contributions to the project. 
+
+* [Antonio Sartori](https://github.com/antosart)
+* Brian Lefler
+* [Enrico Bacis](https://github.com/enricobacis)
+
 [^1]: Enrico Bacis, Igor Bilogrevic, Robert Busa-Fekete, Asanka Herath, Antonio Sartori, and Umar Syed. 2024. Assessing Web Fingerprinting Risk. In Companion Proceedings of the ACM on Web Conference 2024 (WWW '24). Association for Computing Machinery, New York, NY, USA, 245–254. https://doi.org/10.1145/3589335.3648322
