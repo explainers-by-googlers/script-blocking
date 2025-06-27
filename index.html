@@ -1488,9 +1488,9 @@ Possible extra rowspan handling
 		}
 	}
 </style>
-  <meta content="Bikeshed version 275834c42, updated Wed Jun 11 14:18:15 2025 -0700" name="generator">
+  <meta content="Bikeshed version 618007319, updated Thu Jun 26 17:23:55 2025 -0700" name="generator">
   <link href="https://explainers-by-googlers.github.io/script-blocking/" rel="canonical">
-  <meta content="474f08f5be6eba477c333c6a317efdca7180b923" name="revision">
+  <meta content="ac5a869978e5fae6c2a2913ab26247beef494998" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2095,7 +2095,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">Script Blocking</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">A Collection of Interesting Ideas,
-    <time class="dt-updated" datetime="2025-06-25">25 June 2025</time></span></h2>
+    <time class="dt-updated" datetime="2025-06-27">27 June 2025</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2110,7 +2110,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 25 June 2025,
+In addition, as of 27 June 2025,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2132,7 +2132,7 @@ allow alignment on timing and impact.</p>
     <li>
      <a href="#infra"><span class="secno">2</span> <span class="content">Infrastructure</span></a>
      <ol class="toc">
-      <li><a href="#abstract-op"><span class="secno">2.1</span> <span class="content">UserAgentOverrideResponseForRequest(<var>request</var>)</span></a>
+      <li><a href="#override-algorithm"><span class="secno">2.1</span> <span class="content">Overriding responses.</span></a>
       <li><a href="#fetch"><span class="secno">2.2</span> <span class="content">Monkey-Patching Fetch</span></a>
      </ol>
     <li><a href="#testing"><span class="secno">3</span> <span class="content">Testing Considerations</span></a>
@@ -2185,10 +2185,10 @@ treating blockage as a network error, though some browsers will instead
 <a href="https://searchfox.org/mozilla-central/source/browser/extensions/webcompat/data/shims.js">generate a synthetic response ("shim")</a>
 for well-known resources to ensure compatibility.</p>
    <p>We can support these behaviors with additions to <a data-link-type="biblio" href="#biblio-fetch" title="Fetch Standard">[FETCH]</a> that define an
-<a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined">implementation-defined</a> abstract operation that we can call from
+<a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined">implementation-defined</a> algorithm that we can call from
 <a href="https://fetch.spec.whatwg.org/#main-fetch"><cite>Fetch</cite> § 4.1 Main fetch</a>.</p>
-   <h3 class="heading settled algorithm" data-algorithm="UserAgentOverrideResponseForRequest(request)" data-level="2.1" id="abstract-op"><span class="secno">2.1. </span><span class="content">UserAgentOverrideResponseForRequest(<var>request</var>)</span><a class="self-link" href="#abstract-op"></a></h3>
-   <p>The abstract operation <dfn class="dfn-paneled" data-dfn-type="abstract-op" data-export id="abstract-opdef-overrideresponseforrequest">OverrideResponseForRequest</dfn>
+   <h3 class="heading settled algorithm" data-algorithm="Overriding responses." data-level="2.1" id="override-algorithm"><span class="secno">2.1. </span><span class="content">Overriding responses.</span><a class="self-link" href="#override-algorithm"></a></h3>
+   <p>The <dfn class="dfn-paneled" data-dfn-type="abstract-op" data-export id="abstract-opdef-override-response-for-a-request">Override response for a request</dfn> algorithm
 takes a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request" id="ref-for-concept-request">request</a> (<var>request</var>), and returns either a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response" id="ref-for-concept-response">response</a> or <code>null</code>.</p>
    <p>This provides user agents to intervene on a given <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request" id="ref-for-concept-request①">request</a> by returning a
 <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response" id="ref-for-concept-response①">response</a> (either a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-network-error" id="ref-for-concept-network-error">network error</a> or a synthetic response), or to allow
@@ -2250,9 +2250,9 @@ content here</em>].</p>
    <h3 class="heading settled" data-level="2.2" id="fetch"><span class="secno">2.2. </span><span class="content">Monkey-Patching Fetch</span><a class="self-link" href="#fetch"></a></h3>
    <div class="algorithm" data-algorithm="monkey-patching Scheme Fetch">
     
-Fetch will call into this abstract operation near the top of
-<a href="https://fetch.spec.whatwg.org/#scheme-fetch"><cite>Fetch</cite> § 4.2 Scheme fetch</a>, ensuring that any potential shimming happens only after
-<a href="https://fetch.spec.whatwg.org/#main-fetch"><cite>Fetch</cite> § 4.1 Main fetch</a> (which performs CSP, MIX, bad port checks, etc):
+Fetch will call into this algorithm near the top of <a href="https://fetch.spec.whatwg.org/#scheme-fetch"><cite>Fetch</cite> § 4.2 Scheme fetch</a>,
+ensuring that any potential shimming happens only after <a href="https://fetch.spec.whatwg.org/#main-fetch"><cite>Fetch</cite> § 4.1 Main fetch</a>
+(which performs CSP, MIX, bad port checks, etc):
 
 
     <ol>
@@ -2262,7 +2262,11 @@ Fetch will call into this abstract operation near the top of
       <p>Let <var>request</var> be <var>fetchParams</var>’s <strong>request</strong>.</p>
      <li>
       <p>
-       <ins>Return the result of executing <a data-link-type="abstract-op" href="#abstract-opdef-overrideresponseforrequest" id="ref-for-abstract-opdef-overrideresponseforrequest">OverrideResponseForRequest</a> on <var>request</var> if the result is not <code>null</code>.</ins>
+       <ins>Let <var>override response</var> be the result of executing <a data-link-type="abstract-op" href="#abstract-opdef-override-response-for-a-request" id="ref-for-abstract-opdef-override-response-for-a-request">Override response for a request</a> on <var>request</var>.</ins>
+      </p>
+     <li>
+      <p>
+       <ins>If <var>override response</var> is not <code>null</code>, return <var>override response</var>.</ins>
       </p>
      <li>
       <p>Switch on <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-current-url" id="ref-for-concept-request-current-url②">current URL</a>’s <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-scheme" id="ref-for-concept-url-scheme">scheme</a> and run the associated steps:</p>
@@ -2273,9 +2277,9 @@ Fetch will call into this abstract operation near the top of
    </div>
    <div class="algorithm" data-algorithm="monkey-patching HTTP Fetch">
     
-Fetch will also call into the abstract operation near the top of
-<a href="https://fetch.spec.whatwg.org/#http-fetch"><cite>Fetch</cite> § 4.3 HTTP fetch</a>, ensuring that requests which bypass <a href="https://fetch.spec.whatwg.org/#scheme-fetch"><cite>Fetch</cite> § 4.2 Scheme fetch</a>
-(today, at least <code>cors</code> requests) can be handled:
+Fetch will also call into the algorithm near the top of <a href="https://fetch.spec.whatwg.org/#http-fetch"><cite>Fetch</cite> § 4.3 HTTP fetch</a>,
+ensuring that requests which bypass <a href="https://fetch.spec.whatwg.org/#scheme-fetch"><cite>Fetch</cite> § 4.2 Scheme fetch</a> (today, at least
+<code>cors</code> requests) can be handled:
 
 
     <ol>
@@ -2285,7 +2289,7 @@ Fetch will also call into the abstract operation near the top of
       <p>Let <var>response</var> and <var>internalResponse</var> be null.</p>
      <li>
       <p>
-       <ins>Set <var>response</var> to the result of executing <a data-link-type="abstract-op" href="#abstract-opdef-overrideresponseforrequest" id="ref-for-abstract-opdef-overrideresponseforrequest①">OverrideResponseForRequest</a> on <var>request</var>.</ins>
+       <ins>Set <var>response</var> to the result of executing <a data-link-type="abstract-op" href="#abstract-opdef-override-response-for-a-request" id="ref-for-abstract-opdef-override-response-for-a-request①">Override response for a request</a> on <var>request</var>.</ins>
       </p>
      <li>
       <p>
@@ -2519,7 +2523,7 @@ resources is as uniform as possible across their userbase.</p>
   <h2 class="no-num no-ref heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
   <h3 class="no-num no-ref heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="index">
-   <li><a href="#abstract-opdef-overrideresponseforrequest">OverrideResponseForRequest</a><span>, in § 2.1</span>
+   <li><a href="#abstract-opdef-override-response-for-a-request">Override response for a request</a><span>, in § 2.1</span>
   </ul>
   <h3 class="no-num no-ref heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
   <ul class="index">
@@ -2780,24 +2784,24 @@ function parseHTML(markup) {
 {
 let dfnPanelData = {
 "3a711be7": {"dfnID":"3a711be7","dfnText":"scheme","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-url-scheme"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://url.spec.whatwg.org/#concept-url-scheme"},
-"3f2ca4de": {"dfnID":"3f2ca4de","dfnText":"current URL","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-request-current-url"},{"id":"ref-for-concept-request-current-url\u2460"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"},{"refs":[{"id":"ref-for-concept-request-current-url\u2461"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#concept-request-current-url"},
-"4a2cfa3a": {"dfnID":"4a2cfa3a","dfnText":"as a body","external":true,"refSections":[{"refs":[{"id":"ref-for-byte-sequence-as-a-body"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#byte-sequence-as-a-body"},
-"55213b5b": {"dfnID":"55213b5b","dfnText":"request","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-request"},{"id":"ref-for-concept-request\u2460"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-request"},
+"3f2ca4de": {"dfnID":"3f2ca4de","dfnText":"current URL","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-request-current-url"},{"id":"ref-for-concept-request-current-url\u2460"}],"title":"2.1. Overriding responses."},{"refs":[{"id":"ref-for-concept-request-current-url\u2461"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#concept-request-current-url"},
+"4a2cfa3a": {"dfnID":"4a2cfa3a","dfnText":"as a body","external":true,"refSections":[{"refs":[{"id":"ref-for-byte-sequence-as-a-body"}],"title":"2.1. Overriding responses."}],"url":"https://fetch.spec.whatwg.org/#byte-sequence-as-a-body"},
+"55213b5b": {"dfnID":"55213b5b","dfnText":"request","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-request"},{"id":"ref-for-concept-request\u2460"}],"title":"2.1. Overriding responses."}],"url":"https://fetch.spec.whatwg.org/#concept-request"},
 "6d1db60d": {"dfnID":"6d1db60d","dfnText":"service-workers mode","external":true,"refSections":[{"refs":[{"id":"ref-for-request-service-workers-mode"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#request-service-workers-mode"},
-"81a76425": {"dfnID":"81a76425","dfnText":"body","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-body"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response-body"},
-"860300d4": {"dfnID":"860300d4","dfnText":"implementation-defined","external":true,"refSections":[{"refs":[{"id":"ref-for-implementation-defined"}],"title":"2. Infrastructure"},{"refs":[{"id":"ref-for-implementation-defined\u2460"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://infra.spec.whatwg.org/#implementation-defined"},
+"81a76425": {"dfnID":"81a76425","dfnText":"body","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-body"}],"title":"2.1. Overriding responses."}],"url":"https://fetch.spec.whatwg.org/#concept-response-body"},
+"860300d4": {"dfnID":"860300d4","dfnText":"implementation-defined","external":true,"refSections":[{"refs":[{"id":"ref-for-implementation-defined"}],"title":"2. Infrastructure"},{"refs":[{"id":"ref-for-implementation-defined\u2460"}],"title":"2.1. Overriding responses."}],"url":"https://infra.spec.whatwg.org/#implementation-defined"},
 "872edfd5": {"dfnID":"872edfd5","dfnText":"mixed content","external":true,"refSections":[{"refs":[{"id":"ref-for-mixed-content"}],"title":"1. Introduction"}],"url":"https://w3c.github.io/webappsec-mixed-content/#mixed-content"},
 "9b8ae157": {"dfnID":"9b8ae157","dfnText":"bad port","external":true,"refSections":[{"refs":[{"id":"ref-for-bad-port"}],"title":"1. Introduction"}],"url":"https://fetch.spec.whatwg.org/#bad-port"},
-"a1d47575": {"dfnID":"a1d47575","dfnText":"status","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-status"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response-status"},
-"abstract-opdef-overrideresponseforrequest": {"dfnID":"abstract-opdef-overrideresponseforrequest","dfnText":"OverrideResponseForRequest","external":false,"refSections":[{"refs":[{"id":"ref-for-abstract-opdef-overrideresponseforrequest"},{"id":"ref-for-abstract-opdef-overrideresponseforrequest\u2460"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"#abstract-opdef-overrideresponseforrequest"},
-"b85ee3be": {"dfnID":"b85ee3be","dfnText":"host","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-url-host"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://url.spec.whatwg.org/#concept-url-host"},
-"bc9d7803": {"dfnID":"bc9d7803","dfnText":"registrable domain","external":true,"refSections":[{"refs":[{"id":"ref-for-host-registrable-domain"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://url.spec.whatwg.org/#host-registrable-domain"},
-"c0868016": {"dfnID":"c0868016","dfnText":"path","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-url-path"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://url.spec.whatwg.org/#concept-url-path"},
-"cdea6030": {"dfnID":"cdea6030","dfnText":"type","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-type"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response-type"},
-"eb1b1af3": {"dfnID":"eb1b1af3","dfnText":"network error","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-network-error"},{"id":"ref-for-concept-network-error\u2460"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"},{"refs":[{"id":"ref-for-concept-network-error\u2461"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#concept-network-error"},
+"a1d47575": {"dfnID":"a1d47575","dfnText":"status","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-status"}],"title":"2.1. Overriding responses."}],"url":"https://fetch.spec.whatwg.org/#concept-response-status"},
+"abstract-opdef-override-response-for-a-request": {"dfnID":"abstract-opdef-override-response-for-a-request","dfnText":"Override response for a request","external":false,"refSections":[{"refs":[{"id":"ref-for-abstract-opdef-override-response-for-a-request"},{"id":"ref-for-abstract-opdef-override-response-for-a-request\u2460"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"#abstract-opdef-override-response-for-a-request"},
+"b85ee3be": {"dfnID":"b85ee3be","dfnText":"host","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-url-host"}],"title":"2.1. Overriding responses."}],"url":"https://url.spec.whatwg.org/#concept-url-host"},
+"bc9d7803": {"dfnID":"bc9d7803","dfnText":"registrable domain","external":true,"refSections":[{"refs":[{"id":"ref-for-host-registrable-domain"}],"title":"2.1. Overriding responses."}],"url":"https://url.spec.whatwg.org/#host-registrable-domain"},
+"c0868016": {"dfnID":"c0868016","dfnText":"path","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-url-path"}],"title":"2.1. Overriding responses."}],"url":"https://url.spec.whatwg.org/#concept-url-path"},
+"cdea6030": {"dfnID":"cdea6030","dfnText":"type","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-type"}],"title":"2.1. Overriding responses."}],"url":"https://fetch.spec.whatwg.org/#concept-response-type"},
+"eb1b1af3": {"dfnID":"eb1b1af3","dfnText":"network error","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-network-error"},{"id":"ref-for-concept-network-error\u2460"}],"title":"2.1. Overriding responses."},{"refs":[{"id":"ref-for-concept-network-error\u2461"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#concept-network-error"},
 "eb62573b": {"dfnID":"eb62573b","dfnText":"HTTP(S) scheme","external":true,"refSections":[{"refs":[{"id":"ref-for-http-scheme"}],"title":"2.2. Monkey-Patching Fetch"}],"url":"https://fetch.spec.whatwg.org/#http-scheme"},
-"ee7bba09": {"dfnID":"ee7bba09","dfnText":"response","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response"},{"id":"ref-for-concept-response\u2460"},{"id":"ref-for-concept-response\u2461"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response"},
-"f7b00a8b": {"dfnID":"f7b00a8b","dfnText":"header list","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-header-list"}],"title":"2.1. UserAgentOverrideResponseForRequest(request)"}],"url":"https://fetch.spec.whatwg.org/#concept-response-header-list"},
+"ee7bba09": {"dfnID":"ee7bba09","dfnText":"response","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response"},{"id":"ref-for-concept-response\u2460"},{"id":"ref-for-concept-response\u2461"}],"title":"2.1. Overriding responses."}],"url":"https://fetch.spec.whatwg.org/#concept-response"},
+"f7b00a8b": {"dfnID":"f7b00a8b","dfnText":"header list","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-response-header-list"}],"title":"2.1. Overriding responses."}],"url":"https://fetch.spec.whatwg.org/#concept-response-header-list"},
 };
 
 document.addEventListener("DOMContentLoaded", ()=>{
@@ -3186,7 +3190,7 @@ function genLinkingSyntaxes(dfn) {
 "use strict";
 {
 let refsData = {
-"#abstract-opdef-overrideresponseforrequest": {"displayText":"OverrideResponseForRequest","export":true,"for_":[],"level":"1","normative":true,"shortname":"script-blocking","spec":"script-blocking-1","status":"local","text":"OverrideResponseForRequest","type":"abstract-op","url":"#abstract-opdef-overrideresponseforrequest"},
+"#abstract-opdef-override-response-for-a-request": {"displayText":"Override response for a request","export":true,"for_":[],"level":"1","normative":true,"shortname":"script-blocking","spec":"script-blocking-1","status":"local","text":"Override response for a request","type":"abstract-op","url":"#abstract-opdef-override-response-for-a-request"},
 "https://fetch.spec.whatwg.org/#bad-port": {"displayText":"bad port","export":true,"for_":[],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"bad port","type":"dfn","url":"https://fetch.spec.whatwg.org/#bad-port"},
 "https://fetch.spec.whatwg.org/#byte-sequence-as-a-body": {"displayText":"as a body","export":true,"for_":["byte sequence"],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"as a body","type":"dfn","url":"https://fetch.spec.whatwg.org/#byte-sequence-as-a-body"},
 "https://fetch.spec.whatwg.org/#concept-network-error": {"displayText":"network error","export":true,"for_":[],"level":"1","normative":true,"shortname":"fetch","spec":"fetch","status":"current","text":"network error","type":"dfn","url":"https://fetch.spec.whatwg.org/#concept-network-error"},
