@@ -65,13 +65,13 @@ treating blockage as a network error, though some browsers will instead
 for well-known resources to ensure compatibility.
 
 We can support these behaviors with additions to [[!FETCH]] that define an
-[=implementation-defined=] abstract operation that we can call from
+[=implementation-defined=] algorithm that we can call from
 [[FETCH#main-fetch]].
 
 
-<h3 algorithm id="abstract-op">UserAgentOverrideResponseForRequest(|request|)</h3>
+<h3 algorithm id="override-algorithm">Overriding responses.</h3>
 
-The abstract operation <dfn abstract-op export>OverrideResponseForRequest</dfn>
+The <dfn abstract-op export>Override response for a request</dfn> algorithm
 takes a [=/request=] (|request|), and returns either a [=/response=] or `null`.
 
 This provides user agents to intervene on a given [=/request=] by returning a
@@ -123,14 +123,15 @@ Monkey-Patching Fetch {#fetch}
 ------------------------------
 
 <div algorithm="monkey-patching Scheme Fetch">
-Fetch will call into this abstract operation near the top of
-[[FETCH#scheme-fetch]], ensuring that any potential shimming happens only after
-[[FETCH#main-fetch]] (which performs CSP, MIX, bad port checks, etc):
+Fetch will call into this algorithm near the top of [[FETCH#scheme-fetch]],
+ensuring that any potential shimming happens only after [[FETCH#main-fetch]]
+(which performs CSP, MIX, bad port checks, etc):
 
 <ol>
   <li><p>If <var ignore>fetchParams</var> is **canceled**, then return the **appropriate network error** for <var>fetchParams</var>.</p></li>
   <li><p>Let <var>request</var> be <var>fetchParams</var>'s **request**.</p></li>
-  <li><p><ins>Return the result of executing [$OverrideResponseForRequest$] on |request| if the result is not `null`.</ins></p></li> 
+  <li><p><ins>Let <var>override response</var> be the result of executing [$Override response for a request$] on |request|.</ins></p></li>
+  <li><p><ins>If <var>override response</var> is not `null`, return <var>override response</var>.</ins></p></li> 
   <li>
     <p>Switch on <var>request</var>'s <a for=request>current URL</a>'s <a for=url>scheme</a> and run the associated steps:</p>
     <ol><li>&hellip;</li></ol>
@@ -139,14 +140,14 @@ Fetch will call into this abstract operation near the top of
 </div>
 
 <div algorithm="monkey-patching HTTP Fetch">
-Fetch will also call into the abstract operation near the top of
-[[FETCH#http-fetch]], ensuring that requests which bypass [[FETCH#scheme-fetch]]
-(today, at least `cors` requests) can be handled:
+Fetch will also call into the algorithm near the top of [[FETCH#http-fetch]],
+ensuring that requests which bypass [[FETCH#scheme-fetch]] (today, at least
+`cors` requests) can be handled:
 
 <ol>
   <li><p>Let <var>request</var> be <var ignore>fetchParams</var>'s **request**.</p></li>
   <li><p>Let <var>response</var> and <var ignore>internalResponse</var> be null.</p></li>
-  <li><p><ins>Set |response| to the result of executing [$OverrideResponseForRequest$] on |request|.</ins></p></li>
+  <li><p><ins>Set |response| to the result of executing [$Override response for a request$] on |request|.</ins></p></li>
   <li>
     <p>If <ins>|response| is `null` and </ins><var>request</var>'s
     <a>service-workers mode</a> is "<code>all</code>", then:</p>
